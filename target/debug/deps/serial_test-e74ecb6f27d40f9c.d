@@ -1,0 +1,11 @@
+/Users/bai.tn/DevOps/mira/target/debug/deps/serial_test-e74ecb6f27d40f9c.d: /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/lib.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/parallel_code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/rwlock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/serial_code_lock.rs
+
+/Users/bai.tn/DevOps/mira/target/debug/deps/libserial_test-e74ecb6f27d40f9c.rlib: /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/lib.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/parallel_code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/rwlock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/serial_code_lock.rs
+
+/Users/bai.tn/DevOps/mira/target/debug/deps/libserial_test-e74ecb6f27d40f9c.rmeta: /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/lib.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/parallel_code_lock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/rwlock.rs /Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/serial_code_lock.rs
+
+/Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/lib.rs:
+/Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/code_lock.rs:
+/Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/parallel_code_lock.rs:
+/Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/rwlock.rs:
+/Users/bai.tn/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial_test-3.2.0/src/serial_code_lock.rs:

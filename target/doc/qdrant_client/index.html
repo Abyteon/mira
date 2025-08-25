@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The Qdrant - High-Performance Vector Search at Scale - client for Rust."><title>qdrant_client - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-84e720fa.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="qdrant_client" data-themes="" data-resource-suffix="" data-rustdoc-version="1.89.0 (29483883e 2025-08-04) (Homebrew)" data-channel="1.89.0" data-search-js="search-92309212.js" data-settings-js="settings-5514c975.js" ><script src="../static.files/storage-4e99c027.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-fd3af306.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-32bb7600.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../qdrant_client/index.html"><img src="https://qdrant.tech/favicon/android-chrome-192x192.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../qdrant_client/index.html"><img src="https://qdrant.tech/favicon/android-chrome-192x192.png" alt="logo"></a><h2><a href="../qdrant_client/index.html">qdrant_<wbr>client</a><span class="version">1.15.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#connect" title="Connect">Connect</a></li><li><a href="#create-collection" title="Create collection">Create collection</a></li><li><a href="#upsert-points" title="Upsert points">Upsert points</a></li><li><a href="#search-1" title="Search">Search</a></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>qdrant_client</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/qdrant_client/lib.rs.html#1-383">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The <a href="https://qdrant.tech/">Qdrant</a> - High-Performance Vector Search at Scale - client for Rust.</p>
+<p>This crate connects to your Qdrant server over gRPC and provides an easy to use API interface
+for it.</p>
+<h2 id="connect"><a class="doc-anchor" href="#connect">§</a>Connect</h2>
+<p>First you’ll need to <a href="struct.Qdrant.html#set-up" title="struct qdrant_client::Qdrant">set up</a> a <a href="struct.Qdrant.html" title="struct qdrant_client::Qdrant"><code>Qdrant</code></a> client, used to connect to a Qdrant
+instance:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>qdrant_client::Qdrant;
+
+<span class="kw">let </span>client = Qdrant::from_url(<span class="string">"http://localhost:6334"</span>)
+    .api_key(std::env::var(<span class="string">"QDRANT_API_KEY"</span>))
+    .build()<span class="question-mark">?</span>;</code></pre></div>
+<h2 id="create-collection"><a class="doc-anchor" href="#create-collection">§</a>Create collection</h2>
+<p>Qdrant works with <a href="https://qdrant.tech/documentation/concepts/collections/">Collections ⧉ </a> of
+<a href="https://qdrant.tech/documentation/concepts/points/">Points ⧉ </a>. To add vector data, you first
+<a href="struct.Qdrant.html#method.create_collection" title="method qdrant_client::Qdrant::create_collection">create a collection</a>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>qdrant_client::qdrant::{CreateCollectionBuilder, Distance, VectorParamsBuilder};
+
+<span class="kw">let </span>response = client
+    .create_collection(
+        CreateCollectionBuilder::new(<span class="string">"my_collection"</span>)
+            .vectors_config(VectorParamsBuilder::new(<span class="number">512</span>, Distance::Cosine)),
+    )
+    .<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<p>The most interesting parts are the two arguments of
+<a href="qdrant/struct.VectorParamsBuilder.html#method.new" title="associated function qdrant_client::qdrant::VectorParamsBuilder::new"><code>VectorParamsBuilder::new</code></a>. The first one (<code>512</code>) is the
+length of vectors to store and the second one (<a href="qdrant/enum.Distance.html#variant.Cosine" title="variant qdrant_client::qdrant::Distance::Cosine"><code>Distance::Cosine</code></a>)
+is the Distance, which is the <a href="qdrant/enum.Distance.html" title="enum qdrant_client::qdrant::Distance"><code>Distance</code></a> measure to gauge similarity for
+the nearest neighbors search.</p>
+<p>Documentation: <a href="https://qdrant.tech/documentation/concepts/collections/#create-a-collection">https://qdrant.tech/documentation/concepts/collections/#create-a-collection</a></p>
+<h2 id="upsert-points"><a class="doc-anchor" href="#upsert-points">§</a>Upsert points</h2>
+<p>Now we have a collection, we can insert (or rather upsert) points.
+Points have an id, one or more vectors and a payload.
+We can usually do that in bulk, but for this example, we’ll add a
+single point:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>qdrant_client::qdrant::{PointStruct, UpsertPointsBuilder};
+
+<span class="kw">let </span>points = <span class="macro">vec!</span>[
+    PointStruct::new(
+        <span class="number">42</span>,                 <span class="comment">// Unique point ID
+        </span><span class="macro">vec!</span>[<span class="number">0.0_f32</span>; <span class="number">512</span>], <span class="comment">// Vector to upsert
+        // Attached payload
+        </span>[
+            (<span class="string">"great"</span>, <span class="bool-val">true</span>.into()),
+            (<span class="string">"level"</span>, <span class="number">9000</span>.into()),
+            (<span class="string">"text"</span>, <span class="string">"Hi Qdrant!"</span>.into()),
+            (<span class="string">"list"</span>, <span class="macro">vec!</span>[<span class="number">1.234f32</span>, <span class="number">0.815</span>].into()),
+        ],
+    ),
+];
+
+<span class="kw">let </span>response = client
+    .upsert_points(UpsertPointsBuilder::new(<span class="string">"my_collection"</span>, points))
+    .<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<p>Documentation: <a href="https://qdrant.tech/documentation/concepts/points/#upload-points">https://qdrant.tech/documentation/concepts/points/#upload-points</a></p>
+<h2 id="search-1"><a class="doc-anchor" href="#search-1">§</a>Search</h2>
+<p>Finally, we can retrieve points in various ways, the common one being a plain similarity
+search:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>qdrant_client::qdrant::SearchPointsBuilder;
+
+<span class="kw">let </span>search_request = SearchPointsBuilder::new(
+    <span class="string">"my_collection"</span>,    <span class="comment">// Collection name
+    </span><span class="macro">vec!</span>[<span class="number">0.0_f32</span>; <span class="number">512</span>], <span class="comment">// Search vector
+    </span><span class="number">4</span>,                  <span class="comment">// Search limit, number of results to return
+</span>).with_payload(<span class="bool-val">true</span>);
+
+<span class="kw">let </span>response = client.search_points(search_request).<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<p>The parameter for <a href="qdrant/struct.SearchPointsBuilder.html#method.new" title="associated function qdrant_client::qdrant::SearchPointsBuilder::new"><code>SearchPointsBuilder::new()</code></a> constructor
+are pretty straightforward: name of the collection, the vector and how many top-k results to
+return. The <a href="qdrant/struct.SearchPointsBuilder.html#method.with_payload" title="method qdrant_client::qdrant::SearchPointsBuilder::with_payload"><code>with_payload(true)</code></a> call tells qdrant
+to also return the (full) payload data for each point. You can also add a
+<a href="qdrant/struct.SearchPointsBuilder.html#method.filter" title="method qdrant_client::qdrant::SearchPointsBuilder::filter"><code>filter()</code></a> call to the
+<a href="qdrant/struct.SearchPointsBuilder.html" title="struct qdrant_client::qdrant::SearchPointsBuilder"><code>SearchPointsBuilder</code></a> to filter the result. See the
+<a href="qdrant/struct.Filter.html" title="struct qdrant_client::qdrant::Filter"><code>Filter</code></a> documentation for details.</p>
+<p>Documentation: <a href="https://qdrant.tech/documentation/concepts/search/">https://qdrant.tech/documentation/concepts/search/</a></p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="config/index.html" title="mod qdrant_client::config">config</a></dt><dd>Client configuration</dd><dt><a class="mod" href="qdrant/index.html" title="mod qdrant_client::qdrant">qdrant</a></dt><dd>API types</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Payload.html" title="struct qdrant_client::Payload">Payload</a></dt><dd>Point payload</dd><dt><a class="struct" href="struct.Qdrant.html" title="struct qdrant_client::Qdrant">Qdrant</a></dt><dd>API client to interact with a <a href="https://qdrant.tech/">Qdrant</a> server.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.QdrantError.html" title="enum qdrant_client::QdrantError">Qdrant<wbr>Error</a></dt><dd>Qdrant client error</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.QdrantBuilder.html" title="type qdrant_client::QdrantBuilder">Qdrant<wbr>Builder</a></dt><dd>A builder for <a href="struct.Qdrant.html" title="struct qdrant_client::Qdrant"><code>Qdrant</code></a></dd></dl></section></div></main></body></html>

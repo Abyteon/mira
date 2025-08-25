@@ -1,0 +1,49 @@
+# AI女友推理服务依赖 - 2025年1月最新版本
+# Web框架 - 最新版本
+fastapi>=0.118.0
+uvicorn[standard]>=0.35.0
+
+# AI/ML核心库 - 最新版本
+torch>=2.6.0
+transformers>=4.48.0
+sentence-transformers>=3.4.0
+accelerate>=1.2.0
+bitsandbytes>=0.45.0
+einops>=0.9.0
+flash-attn>=2.8.0
+
+# 数据处理 - 最新版本
+numpy>=2.2.0
+pandas>=2.3.0
+scipy>=1.15.0
+
+# 中文NLP - 最新版本
+jieba>=0.43.0
+
+# 异步和工具 - 最新版本
+aiofiles>=25.0.0
+httpx>=0.29.0
+
+# 模型优化 - 最新版本
+optimum>=1.25.0
+tokenizers>=0.21.0
+huggingface-hub>=0.27.0
+
+# 配置管理 - 最新版本
+pydantic>=2.12.0
+pydantic-settings>=2.8.0
+
+# 日志和监控 - 最新版本
+loguru>=0.8.0
+
+# 开发工具 - 最新版本
+pytest>=8.4.0
+pytest-asyncio>=0.25.0
+black>=25.0.0
+isort>=5.14.0
+ruff>=0.9.0
+mypy>=1.15.0
+
+# 性能分析 - 最新版本
+py-spy>=0.4.0
+memory-profiler>=0.65.0

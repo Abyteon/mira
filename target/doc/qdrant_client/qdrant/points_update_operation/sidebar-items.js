@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Operation"],"struct":["ClearPayload","DeletePayload","DeletePoints","DeleteVectors","OverwritePayload","PointStructList","SetPayload","UpdateVectors"]};

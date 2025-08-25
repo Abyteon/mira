@@ -1,0 +1,107 @@
+[project]
+name = "mira"
+description = "MIRA - My Intelligent Romantic Assistant"
+version = "1.0.0"
+channels = ["conda-forge", "pytorch", "nvidia"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
+
+[tasks]
+# Python服务相关任务
+start-python = "cd python_service && python main.py"
+dev-python = "cd python_service && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+test-python = "cd python_service && python -m pytest tests/ -v"
+lint-python = "cd python_service && ruff check . && black --check ."
+format-python = "cd python_service && black . && isort ."
+
+# Rust相关任务
+build-rust = "cargo build --release"
+test-rust = "cargo test"
+check-rust = "cargo check"
+
+# Zig相关任务
+build-zig = "cd zig_system && zig build -Doptimize=ReleaseFast"
+test-zig = "cd zig_system && zig test src/test.zig"
+
+# 完整构建
+build-all = { depends_on = ["build-rust", "build-zig"] }
+test-all = { depends_on = ["test-rust", "test-zig", "test-python"] }
+
+# 开发环境启动
+dev = { depends_on = ["dev-python"] }
+
+[dependencies]
+# Python运行时 - 使用Python 3.13 (2025年最新稳定版)
+python = ">=3.13"
+
+# AI/ML核心库 - 2025年1月最新版本
+pytorch = ">=2.6"
+pytorch-cuda = { version = ">=2.6", channel = "pytorch" }
+transformers = ">=4.48"
+accelerate = ">=1.2"
+bitsandbytes = ">=0.45"
+optimum = ">=1.25"
+
+# 科学计算 - 最新版本
+numpy = ">=2.2"
+pandas = ">=2.3"
+scipy = ">=1.15"
+
+# 中文NLP - 最新版本
+jieba = ">=0.43"
+
+# Web框架 - 最新版本
+fastapi = ">=0.118"
+uvicorn = ">=0.35"
+httpx = ">=0.29"
+aiofiles = ">=25"
+
+# 数据验证和配置 - 最新版本
+pydantic = ">=2.12"
+pydantic-settings = ">=2.8"
+
+# 日志和监控 - 最新版本
+loguru = ">=0.8"
+
+# 开发工具 - 最新版本
+pytest = ">=8.4"
+pytest-asyncio = ">=0.25"
+pytest-cov = ">=6.1"
+black = ">=25"
+isort = ">=5.14"
+ruff = ">=0.9"
+mypy = ">=1.15"
+
+# 性能分析 - 最新版本
+py-spy = ">=0.4"
+memory-profiler = ">=0.65"
+
+[pypi-dependencies]
+# 特定AI模型库需要从PyPI安装 - 2025年最新版本
+sentence-transformers = ">=3.4"
+torch-audio = ">=2.6"
+einops = ">=0.9"  # 张量操作优化
+flash-attn = ">=2.8"  # 高效注意力机制
+tokenizers = ">=0.21"  # 快速tokenizer
+huggingface-hub = ">=0.27"  # HuggingFace模型下载
+
+[feature.cuda]
+dependencies = [
+    "pytorch-cuda",
+    "nvidia::cudatoolkit",
+]
+
+[feature.dev]
+dependencies = [
+    "jupyter",
+    "ipython",
+    "matplotlib",
+    "seaborn",
+]
+
+[environments]
+default = ["cuda"]
+dev = ["cuda", "dev"]
+cpu = []
+
+[activation]
+scripts = ["scripts/setup.sh"]

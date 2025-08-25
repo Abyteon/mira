@@ -1,0 +1,133 @@
+# AI女友项目 - Docker Compose 配置
+version: '3.8'
+
+services:
+  # Qdrant向量数据库
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ai_girlfriend_qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Python推理服务
+  python_inference:
+    build:
+      context: ./python_service
+      dockerfile: Dockerfile
+    container_name: ai_girlfriend_python
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0  # 如果有GPU
+    volumes:
+      - ./models:/app/models  # 挂载模型目录
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Rust主服务 (可选，如果需要独立部署)
+  rust_core:
+    build:
+      context: .
+      dockerfile: Dockerfile.rust
+    container_name: ai_girlfriend_rust
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+      - PYTHON_SERVICE_URL=http://python_inference:8000
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      - qdrant
+      - python_inference
+    restart: unless-stopped
+
+  # Redis缓存 (可选)
+  redis:
+    image: redis:7-alpine
+    container_name: ai_girlfriend_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # PostgreSQL数据库 (可选，持久化存储)
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai_girlfriend_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ai_girlfriend
+      - POSTGRES_USER=ai_user
+      - POSTGRES_PASSWORD=ai_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # Grafana监控面板 (可选)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai_girlfriend_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    restart: unless-stopped
+
+  # Prometheus监控 (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai_girlfriend_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  default:
+    name: ai_girlfriend_network
+    driver: bridge

@@ -1,0 +1,53 @@
+# 多阶段构建 - 编译阶段
+FROM rust:1.82 AS builder
+
+# 安装Zig编译器
+RUN curl -O https://ziglang.org/download/0.15.1/zig-linux-x86_64-0.15.1.tar.xz && \
+    tar -xf zig-linux-x86_64-0.15.1.tar.xz && \
+    mv zig-linux-x86_64-0.15.1 /usr/local/zig && \
+    ln -s /usr/local/zig/zig /usr/local/bin/zig
+
+WORKDIR /app
+
+# 复制依赖文件
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY examples ./examples
+COPY zig_system ./zig_system
+
+# 构建Zig系统层
+RUN cd zig_system && zig build -Doptimize=ReleaseFast
+
+# 构建Rust项目
+RUN cargo build --release
+
+# 运行时阶段
+FROM debian:bookworm-slim
+
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# 从构建阶段复制编译好的二进制文件
+COPY --from=builder /app/target/release/examples/main ./mira-demo
+COPY --from=builder /app/zig_system/zig-out/lib/*.so /usr/local/lib/
+
+# 设置库路径
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# 创建必要的目录
+RUN mkdir -p /app/logs /app/data
+
+# 暴露端口
+EXPOSE 3000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# 启动服务
+CMD ["./mira-demo"]

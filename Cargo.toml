@@ -1,0 +1,104 @@
+[package]
+name = "mira"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# 异步运行时 - 2025年8月最新版 (支持Rust 2024版本)
+tokio = { version = "1.47.1", features = ["full", "tracing"] }
+# Web框架 - 2025年8月最新版 (完整异步支持)
+axum = { version = "0.8.4", features = ["tracing"] }
+# 序列化 - 2025年8月最新版
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+# HTTP客户端 - 2025年8月最新版 (原生TLS)
+reqwest = { version = "0.12.23", features = ["json", "rustls-tls", "stream"] }
+# 向量数据库客户端 - 2025年8月最新版
+qdrant-client = "1.15"
+# 异步特征 - 支持Rust 2024 async closures
+async-trait = "0.1"
+# 数据库 - 2025年8月最新版 (编译时SQL检查)
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "migrate", "json"] }
+# 时间处理 - 2025年8月最新版 (时区支持)
+chrono = { version = "0.4", features = ["serde", "clock"] }
+# UUID生成 - 2025年8月最新版 (v7支持)
+uuid = { version = "1.18.0", features = ["v4", "v7", "serde", "fast-rng"] }
+# 并发集合 - 2025年8月最新版 (使用RC版本，最新特性)
+dashmap = "7.0.0-rc2"
+# 配置管理 - 2025年8月最新版 (异步支持)
+config = { version = "0.15", features = ["async"] }
+# 性能分析和指标 - 2025年8月最新版
+metrics = { version = "0.24", optional = true }
+metrics-exporter-prometheus = { version = "0.16", optional = true }
+# 内存分析 - 2025年8月最新版
+jemalloc-sys = { version = "0.5.4", optional = true }
+# 并行计算 - 2025年8月最新版 (异步适配器)
+rayon = "1.11"
+# 日志 - 2025年8月最新版 (结构化日志)
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = { version = "0.26", optional = true }
+# 错误处理 - 2025年8月最新版
+anyhow = "1.0"
+thiserror = "2.0.16"
+# Python绑定 - 2025年8月最新版 (Python 3.14支持)
+pyo3 = { version = "0.25.1", features = ["auto-initialize", "abi3-py312"], optional = true }
+# 随机数生成 - 2025年8月最新版 (Rust 2024特性)
+rand = { version = "0.9", features = ["std_rng"] }
+# 网络和序列化
+bytes = "1.8"
+# 加密 - 2025年8月最新版
+ring = "0.17.14"
+# 压缩 - 2025年8月最新版  
+flate2 = "1.0"
+
+[lib]
+name = "mira"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+python-bindings = ["pyo3"]
+jemalloc = ["jemalloc-sys"]
+performance = ["metrics", "metrics-exporter-prometheus", "jemalloc"]
+observability = ["tracing-opentelemetry"]
+full = ["python-bindings", "performance", "observability"]
+
+# 开发依赖 - 2025年8月最新版
+[dev-dependencies]
+criterion = { version = "0.6", features = ["html_reports"] }
+proptest = "1.6"
+tokio-test = "0.4.4"
+pretty_assertions = "1.4"
+serial_test = "3.2"
+temp-env = "0.3"
+wiremock = "0.6.5"
+
+# 编译优化配置 - 2025年8月优化
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+# Rust 2024版本特性
+[package.metadata.docs.rs]
+features = ["full"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+# 工作空间配置 - 仅包含Rust包
+[workspace]
+resolver = "2"
+
+# 依赖优化 - 2025年8月最新版本
+[workspace.dependencies]
+tokio = { version = "1.47.1", features = ["full", "tracing"] }
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "1.18.0", features = ["v4", "v7", "serde"] }
+axum = { version = "0.8.4", features = ["tracing"] }
