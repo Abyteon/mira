@@ -43,7 +43,7 @@ Zig 0.15.1+
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-org/mira.git
+git clone https://github.com/Abyteon/mira.git
 cd mira
 
 # 配置环境变量

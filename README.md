@@ -95,14 +95,14 @@ Docker 24.0+
 Docker Compose 2.0+
 
 # 方式三: 手动安装
-Rust 1.82+, Python 3.13+, Zig 0.15.1+
+Rust 2024 Edition+, Python 3.13+, Zig 0.15.1+
 ```
 
 ### 🔥 一键启动 (推荐)
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-org/mira.git
+git clone https://github.com/Abyteon/mira.git
 cd mira
 
 # 2. 使用pixi管理环境 (最简单)
@@ -491,7 +491,7 @@ zig fmt src/            # Zig代码格式化
 - [高性能向量检索优化](blog/vector-optimization.md)
 
 ### 社区
-- 💬 [GitHub Discussions](https://github.com/your-org/mira/discussions)
+- 💬 [GitHub Discussions](https://github.com/Abyteon/mira/discussions)
 - 📧 Email: mira-dev@example.com
 - 🐦 Twitter: @MIRAProject
 
@@ -517,11 +517,11 @@ zig fmt src/            # Zig代码格式化
 
 ## 📊 项目统计
 
-![GitHub stars](https://img.shields.io/github/stars/your-org/mira?style=social)
-![GitHub forks](https://img.shields.io/github/forks/your-org/mira?style=social)
-![GitHub issues](https://img.shields.io/github/issues/your-org/mira)
-![GitHub license](https://img.shields.io/github/license/your-org/mira)
-![CI Status](https://img.shields.io/github/workflow/status/your-org/mira/CI)
+![GitHub stars](https://img.shields.io/github/stars/Abyteon/mira?style=social)
+![GitHub forks](https://img.shields.io/github/forks/Abyteon/mira?style=social)
+![GitHub issues](https://img.shields.io/github/issues/Abyteon/mira)
+![GitHub license](https://img.shields.io/github/license/Abyteon/mira)
+![CI Status](https://img.shields.io/github/workflow/status/Abyteon/mira/CI)
 
 ---
 
@@ -531,6 +531,6 @@ zig fmt src/            # Zig代码格式化
 
 Made with ❤️ by MIRA Team
 
-[⭐ Star](https://github.com/your-org/mira) | [🍴 Fork](https://github.com/your-org/mira/fork) | [📋 Issues](https://github.com/your-org/mira/issues) | [💬 Discussions](https://github.com/your-org/mira/discussions)
+[⭐ Star](https://github.com/Abyteon/mira) | [🍴 Fork](https://github.com/Abyteon/mira/fork) | [📋 Issues](https://github.com/Abyteon/mira/issues) | [💬 Discussions](https://github.com/Abyteon/mira/discussions)
 
 </div>

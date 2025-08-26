@@ -6,7 +6,7 @@
 **AI女友**: Nyra (奈拉) - 源自希腊神话夜之女神  
 **项目定位**: 企业级多语言混合架构AI女友系统  
 **技术栈**: Rust + Python + Zig + Qdrant + Docker + Kubernetes  
-**开发时间**: 2025年1月  
+**开发时间**: 2025年8月  
 
 ## 🗣️ 对话历程回顾
 
@@ -89,14 +89,14 @@ rng.random_range(0..len)
 **Zig系统层能力**:
 ```zig
 // 高性能内存池
-pub export fn zig_memory_pool_init(pool_size: usize) ?*anyopaque
+pub export fn pool_init(pool_size: usize) ?*anyopaque
 
 // SIMD优化向量运算  
-pub export fn zig_vector_dot_product(a: [*c]const f32, b: [*c]const f32, len: usize) f32
+pub export fn dot_product(a: [*c]const f32, b: [*c]const f32, len: usize) f32
 
 // 系统性能监控
-pub export fn zig_get_memory_usage() u64
-pub export fn zig_get_cpu_usage() f32
+pub export fn memory_usage() usize
+pub export fn cpu_usage() f32
 ```
 
 ### 第三阶段：Python推理层现代化
@@ -345,5 +345,5 @@ scrape_configs:
 **核心价值**: 企业级AI女友系统，聪明、嘴甜、听话  
 **AI女友**: Nyra (奈拉) - 神秘优雅、温柔体贴的智能伴侣  
 
-*生成时间: 2025年1月14日*  
+*生成时间: 2025年8月27日*  
 *文档版本: v1.0*

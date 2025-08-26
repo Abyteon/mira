@@ -31,7 +31,7 @@ $RECYCLE.BIN/
 
 # ===== Rust相关 =====
 # 编译输出
-target/
+target/*
 **/target/
 # Cargo.lock  # 保留Cargo.lock以确保依赖版本一致
 *.pdb

@@ -33,7 +33,7 @@ dev = { depends-on = ["dev-python"] }
 # Python运行时 - 使用Python 3.13 (2025年最新稳定版)
 python = ">=3.13"
 
-# AI/ML核心库 - 2025年1月最新版本
+# AI/ML核心库 - 2025年8月最新版本
 pytorch = ">=2.7.1"
 torchaudio = ">=2.8"
 transformers = ">=4.55.4"
@@ -76,7 +76,7 @@ py-spy = ">=0.4"
 memory_profiler = ">=0.61"
 
 [pypi-dependencies]
-# 特定AI模型库需要从PyPI安装 - 2025年最新版本
+# 特定AI模型库需要从PyPI安装 - 2025年8月最新版本
 sentence-transformers = ">=3.4"
 # torchaudio = ">=2.7"  # 使用conda版本而非pypi
 einops = ">=0.8"  # 张量操作优化

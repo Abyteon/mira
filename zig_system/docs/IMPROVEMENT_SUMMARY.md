@@ -24,28 +24,25 @@ zig_system/src/
 ```
 zig_system/
 ├── src/
-│   ├── lib.zig          # 🆕 现代化库入口
-│   ├── c_api.zig        # 🆕 分离的C接口
-│   ├── main.zig         # 保持向后兼容
-│   ├── memory.zig       # ✅ 保持不变
-│   ├── vector.zig       # ✅ 改进命名
-│   └── monitor.zig      # ✅ 保持不变
+│   ├── root.zig          # 🆕 现代化库入口 (整合了lib.zig和c_api.zig)
+│   ├── memory.zig        # ✅ 保持不变
+│   ├── vector.zig        # ✅ 改进命名
+│   └── monitor.zig       # ✅ 保持不变
 ├── tests/
 │   └── integration_test.zig  # 🆕 集成测试
 ├── bench/
 │   └── memory_bench.zig      # 🆕 内存基准测试
 ├── docs/
-│   ├── REFACTOR_PLAN.md      # 🆕 重构计划
 │   └── IMPROVEMENT_SUMMARY.md # 🆕 改进总结
-└── build.zig               # 保持现有，新增build_new.zig
+└── build.zig               # 现代化构建配置
 ```
 
 ### 2. 📝 命名规范统一
 
 #### 类型命名（PascalCase）✅
 - `MemoryPool` - 正确
-- `VectorOps` - 从`Ops`改进而来，更明确
-- `FastHash` - 保持向后兼容别名
+- `Hash` - 从`FastHash`简化而来，更清晰
+- `VectorOps` - 向量操作模块
 
 #### 函数命名改进建议
 **当前状态：** 混合使用camelCase和snake_case
@@ -61,7 +58,7 @@ zig_system/
 
 ### 3. 🏗️ 构建系统现代化
 
-创建了`build_new.zig`，展示现代化构建配置：
+更新了`build.zig`，展示现代化构建配置：
 
 #### 新增功能：
 - **Feature flags支持**：`--enable-simd`, `--enable-profiling`, `--enable-debug`
@@ -97,7 +94,7 @@ zig build -Denable-debug=true
 
 ### 5. 🔧 模块接口改进
 
-#### 新的lib.zig设计：
+#### 新的root.zig设计：
 ```zig
 // 清晰的模块导出
 pub const memory = @import("memory.zig");
@@ -107,6 +104,7 @@ pub const monitor = @import("monitor.zig");
 // 便利的类型别名
 pub const MemoryPool = memory.MemoryPool;
 pub const VectorOps = vector.VectorOps;
+pub const Hash = vector.Hash;
 
 // 版本信息
 pub const version = std.SemanticVersion{ .major = 1, .minor = 0, .patch = 0 };
@@ -115,23 +113,24 @@ pub const version = std.SemanticVersion{ .major = 1, .minor = 0, .patch = 0 };
 pub const Config = struct {
     enable_simd: bool = true,
     enable_memory_pool: bool = true,
-    // ...
+    enable_profiling: bool = false,
+    debug_mode: bool = false,
 };
 ```
 
 #### C API分离：
-- 统一的命名前缀：`mira_zig_`
+- 统一的命名前缀：已简化（如`pool_init`, `dot_product`, `hash`）
 - 清晰的错误处理
-- 版本信息导出
-- 配置查询功能
+- 版本信息导出：`get_version`
+- 配置查询功能：`simd_enabled`
 
 ## 🔄 向后兼容性
 
 ### 保持兼容性：
-- ✅ 原有的`main.zig`继续工作
 - ✅ 原有的构建命令`zig build`正常
-- ✅ 添加了类型别名：`pub const Ops = VectorOps;`
-- ✅ 添加了哈希别名：`pub const FastHash = Hash;`
+- ✅ 添加了类型别名：`pub const VectorOps = vector.VectorOps;`
+- ✅ 添加了哈希别名：`pub const Hash = vector.Hash;`
+- ✅ 所有C API接口保持稳定
 
 ### 迁移建议：
 1. **立即可用**：新的模块结构已经可以使用

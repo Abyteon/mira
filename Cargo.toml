@@ -41,8 +41,8 @@ tracing-opentelemetry = { version = "0.26", optional = true }
 # 错误处理 - 2025年8月最新版
 anyhow = "1.0"
 thiserror = "2.0.16"
-# Python绑定 - 2025年8月最新版 (Python 3.14支持)
-pyo3 = { version = "0.25.1", features = ["auto-initialize", "abi3-py312"], optional = true }
+# Python绑定 - 2025年8月最新版 (Python 3.13支持)
+pyo3 = { version = "0.25.1", features = ["auto-initialize", "abi3-py311"], optional = true }
 # 随机数生成 - 2025年8月最新版 (Rust 2024特性)
 rand = { version = "0.9", features = ["std_rng"] }
 # 网络和序列化
