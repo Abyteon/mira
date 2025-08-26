@@ -33,15 +33,17 @@ services:
       - PYTHONPATH=/app
       - CUDA_VISIBLE_DEVICES=0  # 如果有GPU
     volumes:
-      - ./models:/app/models  # 挂载模型目录
+      - ./data/models:/app/data/models  # 挂载模型目录
     depends_on:
-      - qdrant
+      qdrant:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s  # 给模型加载时间
 
   # Rust主服务 (可选，如果需要独立部署)
   rust_core:
@@ -56,9 +58,12 @@ services:
       - PYTHON_SERVICE_URL=http://python_inference:8000
       - QDRANT_URL=http://qdrant:6333
     depends_on:
-      - qdrant
-      - python_inference
+      qdrant:
+        condition: service_healthy
+      python_inference:
+        condition: service_healthy
     restart: unless-stopped
+    # 注意：Rust服务需要实现健康检查端点
 
   # Redis缓存 (可选)
   redis:

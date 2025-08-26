@@ -45,21 +45,21 @@ pub const SystemMonitor = struct {
     };
     
     /// 获取综合性能指标
-    pub fn getPerformanceMetrics() PerformanceMetrics {
+    pub fn get_performance_metrics() PerformanceMetrics {
         return PerformanceMetrics{
-            .memory_usage_bytes = getMemoryUsage(),
-            .cpu_usage_percent = getCpuUsage(),
-            .process_memory_rss = getProcessMemoryRSS(),
-            .process_memory_vms = getProcessMemoryVMS(),
-            .load_average = getLoadAverage(),
-            .uptime_seconds = getSystemUptime(),
-            .thread_count = getThreadCount(),
-            .file_descriptor_count = getFileDescriptorCount(),
+            .memory_usage_bytes = get_memory_usage(),
+            .cpu_usage_percent = get_cpu_usage(),
+            .process_memory_rss = get_process_memory_rss(),
+            .process_memory_vms = get_process_memory_vms(),
+            .load_average = get_load_average(),
+            .uptime_seconds = get_system_uptime(),
+            .thread_count = get_thread_count(),
+            .file_descriptor_count = get_file_descriptor_count(),
         };
     }
     
     /// 获取系统总内存使用情况
-    pub fn getMemoryUsage() usize {
+    pub fn get_memory_usage() usize {
         switch (builtin.os.tag) {
             .linux => return getLinuxMemoryUsage(),
             .macos => return getMacOSMemoryUsage(),
@@ -69,7 +69,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取CPU使用率
-    pub fn getCpuUsage() f32 {
+    pub fn get_cpu_usage() f32 {
         switch (builtin.os.tag) {
             .linux => return getLinuxCpuUsage(),
             .macos => return getMacOSCpuUsage(),
@@ -79,7 +79,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取进程RSS内存使用
-    pub fn getProcessMemoryRSS() usize {
+    pub fn get_process_memory_rss() usize {
         switch (builtin.os.tag) {
             .linux => return getLinuxProcessMemoryRSS(),
             .macos => return getMacOSProcessMemoryRSS(),
@@ -89,7 +89,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取进程VMS内存使用
-    pub fn getProcessMemoryVMS() usize {
+    pub fn get_process_memory_vms() usize {
         switch (builtin.os.tag) {
             .linux => return getLinuxProcessMemoryVMS(),
             .macos => return getMacOSProcessMemoryVMS(),
@@ -99,7 +99,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取系统负载平均值
-    pub fn getLoadAverage() [3]f32 {
+    pub fn get_load_average() [3]f32 {
         switch (builtin.os.tag) {
             .linux, .macos => return getUnixLoadAverage(),
             .windows => return .{ 0.0, 0.0, 0.0 },
@@ -108,7 +108,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取系统运行时间
-    pub fn getSystemUptime() u64 {
+    pub fn get_system_uptime() u64 {
         switch (builtin.os.tag) {
             .linux => return getLinuxUptime(),
             .macos => return getMacOSUptime(),
@@ -118,7 +118,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取进程线程数
-    pub fn getThreadCount() u32 {
+    pub fn get_thread_count() u32 {
         switch (builtin.os.tag) {
             .linux => return getLinuxThreadCount(),
             .macos => return getMacOSThreadCount(),
@@ -128,7 +128,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 获取文件描述符数量
-    pub fn getFileDescriptorCount() u32 {
+    pub fn get_file_descriptor_count() u32 {
         switch (builtin.os.tag) {
             .linux => return getLinuxFileDescriptorCount(),
             .macos => return getMacOSFileDescriptorCount(),
@@ -138,7 +138,7 @@ pub const SystemMonitor = struct {
     }
     
     /// 设置监控间隔
-    pub fn setMonitoringInterval(interval_ms: u64) void {
+    pub fn set_monitoring_interval(interval_ms: u64) void {
         monitoring_interval_ns = interval_ms * 1000000;
     }
     
@@ -415,29 +415,30 @@ pub const Profiler = struct {
     pub fn init(allocator: std.mem.Allocator) !Profiler {
         return Profiler{
             .start_time = try std.time.Instant.now(),
-            .checkpoints = std.ArrayList(Checkpoint).init(allocator),
+            .checkpoints = std.ArrayList(Checkpoint){},
             .allocator = allocator,
         };
     }
     
     pub fn deinit(self: *Profiler) void {
-        self.checkpoints.deinit();
+        self.checkpoints.deinit(self.allocator);
     }
     
     pub fn checkpoint(self: *Profiler, name: []const u8) !void {
         const now = try std.time.Instant.now();
-        const memory = SystemMonitor.getProcessMemoryRSS();
+        const memory = SystemMonitor.get_process_memory_rss();
         
-        try self.checkpoints.append(.{
+        try self.checkpoints.append(self.allocator, .{
             .name = name,
             .timestamp = now,
             .memory_usage = memory,
         });
     }
     
+    /// 生成性能报告 - 准备兼容Zig 0.15.1新的Writer接口
     pub fn report(self: *const Profiler, writer: anytype) !void {
-        try writer.print("性能分析报告:\n");
-        try writer.print("================\n");
+        try writer.print("性能分析报告:\n", .{});
+        try writer.print("================\n", .{});
         
         var prev_time = self.start_time;
         var prev_memory: usize = 0;
@@ -468,7 +469,7 @@ pub const Profiler = struct {
 
 // 测试
 test "system monitor basic functionality" {
-    const metrics = SystemMonitor.getPerformanceMetrics();
+    const metrics = SystemMonitor.get_performance_metrics();
     
     // 基本检查
     try testing.expect(metrics.memory_usage_bytes > 0 or builtin.os.tag != .linux);

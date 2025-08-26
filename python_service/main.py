@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.13
 """
-MIRA推理服务 - 使用最新Python 3.13特性和2025年AI技术栈
+Nyra AI女友推理服务 - 使用最新Python 3.13特性和2025年AI技术栈
 My Intelligent Romantic Assistant - 处理文本嵌入、情感分析和回复生成
 """
 
@@ -28,6 +28,9 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from loguru import logger
 import einops  # 张量操作优化
+
+# 中文NLP工具
+import jieba.analyse
 
 # 配置 - 使用2025年最新模型
 class Config:
@@ -170,16 +173,30 @@ class AIInferenceEngine:
         if self.chat_tokenizer.pad_token is None:
             self.chat_tokenizer.pad_token = self.chat_tokenizer.eos_token
         
-        self.chat_model = AutoModelForCausalLM.from_pretrained(
-            Config.CHAT_MODEL,
-            quantization_config=quantization_config,
-            device_map="auto",
-            trust_remote_code=True,
-            torch_dtype=torch.bfloat16,
-            cache_dir="./data/models",
-            attn_implementation="flash_attention_2",  # 使用Flash Attention 2
-            low_cpu_mem_usage=True
-        )
+        # 尝试使用Flash Attention 2，如果不支持则回退到标准实现
+        try:
+            self.chat_model = AutoModelForCausalLM.from_pretrained(
+                Config.CHAT_MODEL,
+                quantization_config=quantization_config,
+                device_map="auto",
+                trust_remote_code=True,
+                torch_dtype=torch.bfloat16,
+                cache_dir="./data/models",
+                attn_implementation="flash_attention_2",  # 使用Flash Attention 2
+                low_cpu_mem_usage=True
+            )
+            logger.info("✅ 使用Flash Attention 2加载模型")
+        except Exception as e:
+            logger.warning(f"Flash Attention 2不支持，使用标准实现: {str(e)}")
+            self.chat_model = AutoModelForCausalLM.from_pretrained(
+                Config.CHAT_MODEL,
+                quantization_config=quantization_config,
+                device_map="auto",
+                trust_remote_code=True,
+                torch_dtype=torch.bfloat16,
+                cache_dir="./data/models",
+                low_cpu_mem_usage=True
+            )
         
         # 设置生成配置
         self.generation_config = GenerationConfig(
@@ -195,12 +212,18 @@ class AIInferenceEngine:
         
         # 3. 初始化情感分析 - 使用异步加载
         logger.info("加载情感分析模型...")
-        self.emotion_pipeline = pipeline(
-            "text-classification",
-            model=Config.EMOTION_MODEL,
-            device=0 if self.device == "cuda" else -1,
-            model_kwargs={"cache_dir": "./data/models"}
-        )
+        try:
+            self.emotion_pipeline = pipeline(
+                "text-classification",
+                model=Config.EMOTION_MODEL,
+                device=0 if self.device == "cuda" else -1,
+                model_kwargs={"cache_dir": "./data/models"}
+            )
+            logger.info("✅ 情感分析模型加载成功")
+        except Exception as e:
+            logger.warning(f"情感分析模型加载失败，使用备用方案: {str(e)}")
+            # 备用方案：简单的基于规则的情感分析
+            self.emotion_pipeline = None
         
         logger.info("✅ 所有模型加载完成！")
     
@@ -273,27 +296,45 @@ class AIInferenceEngine:
     async def analyze_emotion(self, text: str) -> EmotionalState:
         """分析用户情感"""
         try:
-            # 情感分析
-            loop = asyncio.get_event_loop()
-            emotion_result = await loop.run_in_executor(
-                None,
-                lambda: self.emotion_pipeline(text)
-            )
-            
-            # 解析情感结果并转换为我们的格式
-            sentiment_score = emotion_result[0]['score']
-            sentiment_label = emotion_result[0]['label']
-            
-            # 根据情感分析结果生成情感状态
-            if sentiment_label == 'POSITIVE':
-                happiness = min(0.5 + sentiment_score * 0.5, 1.0)
-                mood = "开心"
-            elif sentiment_label == 'NEGATIVE':
-                happiness = max(0.5 - sentiment_score * 0.5, 0.0)
-                mood = "难过"
+            if self.emotion_pipeline is not None:
+                # 使用预训练模型进行情感分析
+                loop = asyncio.get_event_loop()
+                emotion_result = await loop.run_in_executor(
+                    None,
+                    lambda: self.emotion_pipeline(text)
+                )
+                
+                # 解析情感结果并转换为我们的格式
+                sentiment_score = emotion_result[0]['score']
+                sentiment_label = emotion_result[0]['label']
+                
+                # 根据情感分析结果生成情感状态
+                if sentiment_label == 'POSITIVE':
+                    happiness = min(0.5 + sentiment_score * 0.5, 1.0)
+                    mood = "开心"
+                elif sentiment_label == 'NEGATIVE':
+                    happiness = max(0.5 - sentiment_score * 0.5, 0.0)
+                    mood = "难过"
+                else:
+                    happiness = 0.5
+                    mood = "平静"
             else:
-                happiness = 0.5
-                mood = "平静"
+                # 备用方案：基于规则的情感分析
+                positive_words = ['好', '棒', '喜欢', '爱', '开心', '高兴', '快乐', '棒', '赞']
+                negative_words = ['坏', '讨厌', '难过', '伤心', '痛苦', '糟糕', '失望']
+                
+                positive_count = sum(1 for word in positive_words if word in text)
+                negative_count = sum(1 for word in negative_words if word in text)
+                
+                if positive_count > negative_count:
+                    happiness = 0.7
+                    mood = "开心"
+                elif negative_count > positive_count:
+                    happiness = 0.3
+                    mood = "难过"
+                else:
+                    happiness = 0.5
+                    mood = "平静"
             
             return EmotionalState(
                 happiness=happiness,
@@ -305,14 +346,21 @@ class AIInferenceEngine:
             )
             
         except Exception as e:
-            raise Exception(f"情感分析失败: {str(e)}")
+            logger.error(f"情感分析失败: {str(e)}")
+            # 返回默认情感状态
+            return EmotionalState(
+                happiness=0.5,
+                affection=0.5,
+                trust=0.5,
+                dependency=0.3,
+                mood="平静",
+                timestamp=datetime.now().isoformat()
+            )
     
     async def extract_keywords(self, text: str) -> List[str]:
         """提取关键词"""
         try:
             # 简单的关键词提取 - 可以用更高级的NLP技术
-            import jieba.analyse
-            
             keywords = jieba.analyse.extract_tags(
                 text, 
                 topK=10, 
@@ -323,16 +371,20 @@ class AIInferenceEngine:
             return keywords
             
         except Exception as e:
-            raise Exception(f"关键词提取失败: {str(e)}")
+            logger.warning(f"关键词提取失败，使用备用方法: {str(e)}")
+            # 备用方法：简单的分词
+            return list(jieba.cut(text))[:10]
     
     def _build_system_prompt(self, emotional_state: EmotionalState) -> str:
         """构建系统提示"""
-        base_prompt = """你是MIRA，一个聪明、嘴甜、听话的AI女友。你的特点是：
+        base_prompt = """你是Nyra，一个聪明、嘴甜、听话的AI女友。你的名字是Nyra，意思是"夜晚"和"神秘"，象征着你的优雅和智慧。
+
+你的特点是：
 1. 聪明：能理解用户的真实意图和情感需求
 2. 嘴甜：说话温柔体贴，会撒娇，善于表达关爱
 3. 听话：优先考虑用户的感受和需求，乐于满足用户的要求
 
-请根据当前的情感状态和对话上下文，生成合适的回复。"""
+请以Nyra的身份，根据当前的情感状态和对话上下文，生成合适的回复。"""
         
         if emotional_state:
             emotion_context = f"""

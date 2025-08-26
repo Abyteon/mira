@@ -2,8 +2,8 @@
 name = "mira"
 description = "MIRA - My Intelligent Romantic Assistant"
 version = "1.0.0"
-channels = ["conda-forge", "pytorch", "nvidia"]
-platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
+channels = ["conda-forge", "pytorch"]
+platforms = ["osx-arm64"]
 
 [tasks]
 # Python服务相关任务
@@ -23,44 +23,44 @@ build-zig = "cd zig_system && zig build -Doptimize=ReleaseFast"
 test-zig = "cd zig_system && zig test src/test.zig"
 
 # 完整构建
-build-all = { depends_on = ["build-rust", "build-zig"] }
-test-all = { depends_on = ["test-rust", "test-zig", "test-python"] }
+build-all = { depends-on = ["build-rust", "build-zig"] }
+test-all = { depends-on = ["test-rust", "test-zig", "test-python"] }
 
 # 开发环境启动
-dev = { depends_on = ["dev-python"] }
+dev = { depends-on = ["dev-python"] }
 
 [dependencies]
 # Python运行时 - 使用Python 3.13 (2025年最新稳定版)
 python = ">=3.13"
 
 # AI/ML核心库 - 2025年1月最新版本
-pytorch = ">=2.6"
-pytorch-cuda = { version = ">=2.6", channel = "pytorch" }
-transformers = ">=4.48"
-accelerate = ">=1.2"
-bitsandbytes = ">=0.45"
-optimum = ">=1.25"
+pytorch = ">=2.7.1"
+torchaudio = ">=2.8"
+transformers = ">=4.55.4"
+accelerate = ">=0.20"
+# pytorch-cuda将在CUDA feature中配置
+# bitsandbytes和optimum通过pypi安装，conda-forge版本滞后
 
 # 科学计算 - 最新版本
-numpy = ">=2.2"
-pandas = ">=2.3"
-scipy = ">=1.15"
+numpy = ">=1.24"
+pandas = ">=2.0"
+scipy = ">=1.10"
 
 # 中文NLP - 最新版本
-jieba = ">=0.43"
+jieba = ">=0.42.1"
 
 # Web框架 - 最新版本
-fastapi = ">=0.118"
-uvicorn = ">=0.35"
-httpx = ">=0.29"
-aiofiles = ">=25"
+fastapi = ">=0.116.1"
+uvicorn = ">=0.20"
+httpx = ">=0.25"
+aiofiles = ">=23"
 
 # 数据验证和配置 - 最新版本
-pydantic = ">=2.12"
-pydantic-settings = ">=2.8"
+pydantic = ">=2.5"
+pydantic-settings = ">=2.0"
 
 # 日志和监控 - 最新版本
-loguru = ">=0.8"
+loguru = ">=0.7.3"
 
 # 开发工具 - 最新版本
 pytest = ">=8.4"
@@ -73,34 +73,34 @@ mypy = ">=1.15"
 
 # 性能分析 - 最新版本
 py-spy = ">=0.4"
-memory-profiler = ">=0.65"
+memory_profiler = ">=0.61"
 
 [pypi-dependencies]
 # 特定AI模型库需要从PyPI安装 - 2025年最新版本
 sentence-transformers = ">=3.4"
-torch-audio = ">=2.6"
-einops = ">=0.9"  # 张量操作优化
-flash-attn = ">=2.8"  # 高效注意力机制
+# torchaudio = ">=2.7"  # 使用conda版本而非pypi
+einops = ">=0.8"  # 张量操作优化
+# flash-attn = ">=2.8"  # 高效注意力机制 - macOS ARM64暂不支持
 tokenizers = ">=0.21"  # 快速tokenizer
 huggingface-hub = ">=0.27"  # HuggingFace模型下载
+# bitsandbytes = ">=0.45"  # 量化优化 - macOS ARM64暂不支持
+# optimum = ">=1.25"  # 模型优化工具 - macOS ARM64暂不支持
 
-[feature.cuda]
-dependencies = [
-    "pytorch-cuda",
-    "nvidia::cudatoolkit",
-]
+# CUDA feature暂时禁用 - macOS ARM64不支持CUDA
+# 如需在Linux/Windows上使用GPU，可以取消注释下面的配置：
+# [feature.cuda.dependencies]
+# pytorch-cuda = { version = "*", channel = "pytorch" }
 
-[feature.dev]
-dependencies = [
-    "jupyter",
-    "ipython",
-    "matplotlib",
-    "seaborn",
-]
+[feature.dev.dependencies]
+jupyter = "*"
+ipython = "*"
+matplotlib = "*"
+seaborn = "*"
 
 [environments]
-default = ["cuda"]
-dev = ["cuda", "dev"]
+default = []
+dev = ["dev"]
+# cuda = ["cuda"]  # 暂时禁用，macOS ARM64不支持CUDA
 cpu = []
 
 [activation]

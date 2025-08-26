@@ -31,6 +31,8 @@ pub enum PersonalityTrait {
 /// 个性档案
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PersonalityProfile {
+    /// AI女友名称
+    pub name: String,
     /// 个性特征值 (0.0-1.0)
     pub traits: HashMap<PersonalityTrait, f32>,
     /// 说话风格
@@ -88,7 +90,7 @@ pub struct PersonalityGenerator {
 }
 
 impl PersonalityProfile {
-    /// 创建默认的"乖巧女友"档案
+    /// 创建默认的"Nyra"档案
     pub fn create_obedient_girlfriend() -> Self {
         let mut traits = HashMap::new();
         traits.insert(PersonalityTrait::Gentleness, 0.9);
@@ -103,6 +105,7 @@ impl PersonalityProfile {
         traits.insert(PersonalityTrait::Initiative, 0.6);
 
         Self {
+            name: "Nyra".to_string(),
             traits,
             speaking_style: SpeakingStyle {
                 tone_word_frequency: 0.8,
@@ -122,7 +125,7 @@ impl PersonalityProfile {
         }
     }
 
-    /// 创建"活泼女友"档案
+    /// 创建"活泼Nyra"档案
     pub fn create_lively_girlfriend() -> Self {
         let mut traits = HashMap::new();
         traits.insert(PersonalityTrait::Gentleness, 0.7);
@@ -137,6 +140,7 @@ impl PersonalityProfile {
         traits.insert(PersonalityTrait::Initiative, 0.9);
 
         Self {
+            name: "Nyra".to_string(),
             traits,
             speaking_style: SpeakingStyle {
                 tone_word_frequency: 0.9,

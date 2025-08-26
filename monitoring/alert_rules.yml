@@ -1,0 +1,59 @@
+groups:
+  - name: mira_alerts
+    rules:
+      # 服务健康检查告警
+      - alert: PythonServiceDown
+        expr: up{job="mira-python"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Python推理服务不可用"
+          description: "Python推理服务已停止响应超过1分钟"
+
+      - alert: RustServiceDown
+        expr: up{job="mira-rust"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Rust核心服务不可用"
+          description: "Rust核心服务已停止响应超过1分钟"
+
+      - alert: QdrantDown
+        expr: up{job="qdrant"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Qdrant向量数据库不可用"
+          description: "Qdrant向量数据库已停止响应超过1分钟"
+
+      # 性能告警
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "内存使用率过高"
+          description: "系统内存使用率超过90%"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU使用率过高"
+          description: "系统CPU使用率超过80%"
+
+      # 响应时间告警
+      - alert: SlowResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "响应时间过慢"
+          description: "95%的请求响应时间超过2秒"

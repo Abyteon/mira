@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["qdrant_client",[["impl&lt;T&gt; <a class=\"trait\" href=\"https://docs.rs/tonic/0.12.3/tonic/server/trait.NamedService.html\" title=\"trait tonic::server::NamedService\">NamedService</a> for <a class=\"struct\" href=\"qdrant_client/qdrant/collections_server/struct.CollectionsServer.html\" title=\"struct qdrant_client::qdrant::collections_server::CollectionsServer\">CollectionsServer</a>&lt;T&gt;"],["impl&lt;T&gt; <a class=\"trait\" href=\"https://docs.rs/tonic/0.12.3/tonic/server/trait.NamedService.html\" title=\"trait tonic::server::NamedService\">NamedService</a> for <a class=\"struct\" href=\"qdrant_client/qdrant/points_server/struct.PointsServer.html\" title=\"struct qdrant_client::qdrant::points_server::PointsServer\">PointsServer</a>&lt;T&gt;"],["impl&lt;T&gt; <a class=\"trait\" href=\"https://docs.rs/tonic/0.12.3/tonic/server/trait.NamedService.html\" title=\"trait tonic::server::NamedService\">NamedService</a> for <a class=\"struct\" href=\"qdrant_client/qdrant/qdrant_server/struct.QdrantServer.html\" title=\"struct qdrant_client::qdrant::qdrant_server::QdrantServer\">QdrantServer</a>&lt;T&gt;"],["impl&lt;T&gt; <a class=\"trait\" href=\"https://docs.rs/tonic/0.12.3/tonic/server/trait.NamedService.html\" title=\"trait tonic::server::NamedService\">NamedService</a> for <a class=\"struct\" href=\"qdrant_client/qdrant/snapshots_server/struct.SnapshotsServer.html\" title=\"struct qdrant_client::qdrant::snapshots_server::SnapshotsServer\">SnapshotsServer</a>&lt;T&gt;"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[1499]}

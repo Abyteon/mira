@@ -18,7 +18,7 @@ build-rust:
 build-python:
 	@echo "🐍 设置Python推理层..."
 	cd python_service && \
-	python3.14 -m venv venv && \
+	python3.13 -m venv venv && \
 	. venv/bin/activate && \
 	pip install -r requirements.txt
 
@@ -86,7 +86,7 @@ install-deps:
 	@echo "📦 安装系统依赖..."
 	# Rust
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-	# Python 3.14 (需要手动安装或从源码编译)
+	# Python 3.13 (需要手动安装或从源码编译)
 	# Zig 0.15.1
 	curl -O https://ziglang.org/download/0.15.1/zig-macos-aarch64-0.15.1.tar.xz
 	tar -xf zig-macos-aarch64-0.15.1.tar.xz

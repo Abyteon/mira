@@ -3,7 +3,7 @@
 
 use mira::{
     MemorySystem, MemoryConfig, MemoryType, EmotionalState,
-    vector_store::{MockVectorStore, QdrantStore},
+    vector_store::{MockVectorStore},
     bridge::{PythonInferenceClient, ZigSystemMonitor},
     emotion::{EmotionalEngine, PersonalityProfile, PersonalityGenerator},
 };
@@ -13,9 +13,9 @@ use tokio;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 初始化日志
-    tracing_subscriber::init();
+    tracing_subscriber::fmt::init();
     
-    println!("🎀 AI女友项目启动 - 多语言混合架构演示");
+    println!("🎀 Nyra AI女友项目启动 - 多语言混合架构演示");
     println!("==================================================");
     
     // 1. 初始化核心系统
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let personality_profile = PersonalityProfile::create_obedient_girlfriend();
     let personality_generator = PersonalityGenerator::new(personality_profile.clone());
     
-    println!("👧 女友个性: {}", personality_profile.description);
+    println!("👧 {} 的个性: {}", personality_profile.name, personality_profile.description);
     
     // 5. 演示记忆系统功能
     println!("\n🧠 演示记忆系统功能...");
@@ -120,12 +120,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         // 处理情感变化
         for (trigger, intensity) in triggers {
+            println!("💫 情感触发: {:?} (强度: {:.2})", trigger, intensity);
             current_emotion = emotional_engine.process_trigger(
                 &current_emotion,
                 trigger,
                 intensity,
             );
-            println!("💫 情感触发: {:?} (强度: {:.2})", trigger, intensity);
         }
         
         // 更新记忆系统的情感状态
@@ -142,7 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             user_input,
         );
         
-        println!("🤖 AI女友: {}", final_response);
+        println!("🤖 {}: {}", personality_profile.name, final_response);
         println!("😊 当前情感: 开心={:.2}, 亲密={:.2}, 信任={:.2}, 心情={}",
             current_emotion.happiness,
             current_emotion.affection,

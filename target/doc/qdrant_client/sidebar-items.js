@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["QdrantError"],"mod":["config","qdrant"],"struct":["Payload","Qdrant"],"type":["QdrantBuilder"]};

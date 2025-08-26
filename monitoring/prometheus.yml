@@ -20,12 +20,13 @@ scrape_configs:
     scrape_interval: 10s
     scrape_timeout: 5s
 
-  # MIRA Rust核心服务
+  # MIRA Rust核心服务 (如果启用)
   - job_name: 'mira-rust'
     static_configs:
       - targets: ['rust_core:3000']
     metrics_path: '/metrics'
     scrape_interval: 10s
+    # 注意：Rust服务需要实现/metrics端点
 
   # Qdrant向量数据库
   - job_name: 'qdrant'

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CompressionEncoding"],"struct":["QdrantConfig"],"trait":["AsOptionApiKey","AsTimeout"]};
