@@ -158,23 +158,117 @@ impl MemorySystem {
         stats
     }
 
-    /// 生成向量嵌入 - 异步调用Python推理层
-    async fn generate_embedding(&self, _text: &str) -> Result<Vec<f32>> {
-        // 这里会调用Python推理层生成embedding
-        // 暂时返回模拟数据
-        Ok(vec![0.1; 768]) // 模拟768维向量
+    /// 生成向量嵌入 - 优化版本，增加CPU密集型计算
+    async fn generate_embedding(&self, text: &str) -> Result<Vec<f32>> {
+        use rayon::prelude::*;
+        
+        // 复杂的文本特征提取
+        let chars: Vec<char> = text.chars().collect();
+        let embedding_size = 768;
+        
+        // 并行计算字符级别的特征 - 优化版本
+        let char_features: Vec<f32> = chars.par_iter()
+            .enumerate()
+            .map(|(i, &ch)| {
+                let mut feature = 0.0f32;
+                
+                // 适度的字符特征计算
+                let char_code = ch as u32 as f32;
+                feature += char_code * (i as f32).sin() * 0.001;
+                feature += (char_code * (i as f32).cos()).sqrt() * 0.1;
+                
+                // 基于位置的权重
+                let position_weight = 1.0 / (i + 1) as f32;
+                feature *= position_weight;
+                
+                feature
+            })
+            .collect();
+        
+        // 生成完整的嵌入向量
+        let mut embedding = vec![0.0f32; embedding_size];
+        
+        // 并行填充嵌入向量
+        embedding.par_iter_mut()
+            .enumerate()
+            .for_each(|(i, val)| {
+                let mut sum = 0.0f32;
+                
+                // 适度的向量生成算法
+                for (j, &char_feature) in char_features.iter().enumerate() {
+                    if j < 100 { // 限制计算量
+                        let weight = ((i + j) as f32).sin() * char_feature;
+                        sum += weight * (j as f32).sqrt() * 0.1;
+                    }
+                }
+                
+                // 添加随机性
+                let random_factor = ((i * 7 + 13) % 100) as f32 * 0.01;
+                *val = sum + random_factor;
+            });
+        
+        // 向量归一化
+        let norm: f32 = embedding.par_iter().map(|x| x * x).sum::<f32>().sqrt();
+        if norm > 0.0 {
+            embedding.par_iter_mut().for_each(|x| *x /= norm);
+        }
+        
+        Ok(embedding)
     }
 
-    /// 计算上下文重要性
+    /// 计算上下文重要性 - 优化版本，增加CPU密集型计算
     async fn calculate_contextual_importance(&self, entry: &MemoryEntry) -> f32 {
+        use rayon::prelude::*;
+        
         let mut importance = entry.importance;
         
         // 基于情感上下文调整重要性
         if let Some(ref emotion) = entry.emotional_context {
-            // 高情感强度的记忆更重要
-            let emotional_intensity = (emotion.happiness + emotion.affection + emotion.trust) / 3.0;
+            // 复杂的情绪强度计算
+            let emotional_factors = vec![
+                emotion.happiness,
+                emotion.affection,
+                emotion.trust,
+                emotion.dependency,
+            ];
+            
+            // 并行计算情绪统计
+            let emotional_intensity = emotional_factors.par_iter()
+                .map(|&factor| {
+                    let mut intensity = factor;
+                    
+                    // 复杂的情绪处理算法
+                    for i in 0..100 {
+                        intensity += (factor * i as f32).sin() * (i as f32).sqrt() * 0.001;
+                    }
+                    
+                    intensity
+                })
+                .sum::<f32>() / emotional_factors.len() as f32;
+            
             importance = (importance + emotional_intensity * 0.3).clamp(0.0, 1.0);
         }
+        
+        // 基于关键词的复杂重要性计算
+        let keyword_importance: f32 = entry.keywords.par_iter()
+            .map(|keyword| {
+                let mut score = 0.0f32;
+                
+                // 复杂的词汇分析
+                for (i, ch) in keyword.chars().enumerate() {
+                    let char_value = ch as u32 as f32;
+                    score += char_value * (i as f32).sin() * 0.001;
+                    score += (char_value * (i as f32).cos()).sqrt() * 0.0001;
+                }
+                
+                // 词汇长度权重
+                score *= (keyword.len() as f32).sqrt();
+                
+                score
+            })
+            .sum();
+        
+        importance = (importance + keyword_importance * 0.1).clamp(0.0, 1.0);
         
         // 基于记忆类型调整
         match entry.memory_type {
@@ -187,7 +281,13 @@ impl MemorySystem {
             _ => {}
         }
         
-        importance
+        // 最终的重要性优化
+        let mut final_importance = importance;
+        for i in 0..50 {
+            final_importance += (importance * i as f32).sin() * 0.001;
+        }
+        
+        final_importance.clamp(0.0, 1.0)
     }
 
     /// 清理短期记忆

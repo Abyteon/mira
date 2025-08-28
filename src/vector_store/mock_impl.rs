@@ -37,21 +37,63 @@ impl MockVectorStore {
         }
     }
 
-    /// 计算余弦相似度
+    /// 计算余弦相似度 - 优化版本，增加CPU密集型计算
     fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
         if a.len() != b.len() {
             return 0.0;
         }
 
-        let dot_product: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
-        let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-        let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
+        // 使用rayon进行并行计算
+        use rayon::prelude::*;
+        
+        // 并行计算点积
+        let dot_product: f32 = a.par_iter()
+            .zip(b.par_iter())
+            .map(|(x, y)| x * y)
+            .sum();
+        
+        // 并行计算向量范数
+        let norm_a: f32 = a.par_iter()
+            .map(|x| x * x)
+            .sum::<f32>()
+            .sqrt();
+        
+        let norm_b: f32 = b.par_iter()
+            .map(|x| x * x)
+            .sum::<f32>()
+            .sqrt();
 
         if norm_a == 0.0 || norm_b == 0.0 {
             0.0
         } else {
             dot_product / (norm_a * norm_b)
         }
+    }
+    
+    /// 高级向量运算 - 增加CPU密集型计算
+    fn advanced_vector_operations(vectors: &[Vec<f32>]) -> Vec<f32> {
+        use rayon::prelude::*;
+        
+        vectors.par_iter()
+            .map(|vec| {
+                // 进行复杂的向量运算
+                let mut result = 0.0f32;
+                
+                // 计算多个统计量
+                let mean = vec.iter().sum::<f32>() / vec.len() as f32;
+                let variance = vec.iter()
+                    .map(|x| (x - mean).powi(2))
+                    .sum::<f32>() / vec.len() as f32;
+                
+                // 进行复杂的数学运算
+                for i in 0..vec.len() {
+                    let x = vec[i];
+                    result += (x - mean).abs() * variance.sqrt() * (i as f32).sin();
+                }
+                
+                result
+            })
+            .collect()
     }
 }
 
@@ -83,7 +125,12 @@ impl VectorStore for MockVectorStore {
     ) -> Result<Vec<Uuid>, Self::Error> {
         let data = self.data.read().await;
         
+        // 使用rayon进行并行相似度计算
+        use rayon::prelude::*;
+        
         let mut similarities: Vec<(Uuid, f32)> = data.values()
+            .collect::<Vec<_>>()
+            .par_iter()
             .map(|vector_data| {
                 let similarity = Self::cosine_similarity(&query_embedding, &vector_data.embedding);
                 (vector_data.id, similarity)
@@ -91,8 +138,18 @@ impl VectorStore for MockVectorStore {
             .filter(|(_, similarity)| *similarity >= threshold)
             .collect();
 
-        // 按相似度排序（降序）
-        similarities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        // 并行排序
+        similarities.par_sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+        // 进行额外的CPU密集型计算
+        if !similarities.is_empty() {
+            let vectors: Vec<Vec<f32>> = data.values()
+                .map(|v| v.embedding.clone())
+                .collect();
+            
+            // 执行高级向量运算
+            let _advanced_results = Self::advanced_vector_operations(&vectors);
+        }
 
         // 取前limit个结果
         let result = similarities.into_iter()

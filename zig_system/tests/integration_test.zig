@@ -11,6 +11,7 @@ const FLOAT_TOLERANCE = 0.001;
 const TEST_ITERATIONS = 1000;
 
 test "memory pool integration" {
+    std.debug.print("🧪 开始内存池集成测试...\n", .{});
     var pool = try mira.memory.MemoryPool.init(testing.allocator, TEST_POOL_SIZE);
     defer pool.deinit();
     
@@ -34,9 +35,12 @@ test "memory pool integration" {
     const stats_after = pool.get_stats();
     try testing.expect(stats_after.used <= stats_after.total);
     try testing.expect(stats_after.free <= stats_after.total);
+    
+    std.debug.print("✅ 内存池集成测试通过\n", .{});
 }
 
 test "vector operations integration" {
+    std.debug.print("🧪 开始向量运算集成测试...\n", .{});
     // 测试点积
     const vec1 = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0 };
     const vec2 = [_]f32{ 2.0, 3.0, 4.0, 5.0, 6.0 };
@@ -63,9 +67,12 @@ test "vector operations integration" {
     
     const length = @sqrt(test_vec[0]*test_vec[0] + test_vec[1]*test_vec[1] + test_vec[2]*test_vec[2]);
     try testing.expectApproxEqRel(length, 1.0, FLOAT_TOLERANCE);
+    
+    std.debug.print("✅ 向量运算集成测试通过\n", .{});
 }
 
 test "hash function integration" {
+    std.debug.print("🧪 开始哈希函数集成测试...\n", .{});
     const test_strings = [_][]const u8{
         "Hello World",
         "MIRA - My Intelligent Romantic Assistant", 
@@ -88,9 +95,12 @@ test "hash function integration" {
             try testing.expect(hash1 != 0);
         }
     }
+    
+    std.debug.print("✅ 哈希函数集成测试通过\n", .{});
 }
 
 test "system monitoring integration" {
+    std.debug.print("🧪 开始系统监控集成测试...\n", .{});
     const initial_memory = mira.monitor.SystemMonitor.get_memory_usage();
     const initial_cpu = mira.monitor.SystemMonitor.get_cpu_usage();
     
@@ -107,6 +117,8 @@ test "system monitoring integration" {
     
     // 验证计算结果不为零
     try testing.expect(sum > 0.0);
+    
+    std.debug.print("✅ 系统监控集成测试通过\n", .{});
     
     const final_memory = mira.monitor.SystemMonitor.get_memory_usage();
     const final_cpu = mira.monitor.SystemMonitor.get_cpu_usage();

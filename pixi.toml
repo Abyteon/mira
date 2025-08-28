@@ -20,7 +20,7 @@ check-rust = "cargo check"
 
 # Zig相关任务
 build-zig = "cd zig_system && zig build -Doptimize=ReleaseFast"
-test-zig = "cd zig_system && zig test src/test.zig"
+test-zig = "cd zig_system && zig build test"
 
 # 完整构建
 build-all = { depends-on = ["build-rust", "build-zig"] }

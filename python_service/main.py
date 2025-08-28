@@ -30,6 +30,8 @@ from loguru import logger
 import einops  # 张量操作优化
 
 # 中文NLP工具
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning, module="jieba")
 import jieba.analyse
 
 # 配置 - 使用2025年最新模型
@@ -154,13 +156,23 @@ class AIInferenceEngine:
         
         # 2. 初始化对话模型 - 使用2025年最新量化技术
         logger.info("加载对话模型...")
-        quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,  # 使用bfloat16提升性能
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_quant_storage=torch.bfloat16
-        )
+        
+        # 检查是否支持4-bit量化（macOS ARM64可能不支持）
+        quantization_config = None
+        try:
+            import bitsandbytes
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.bfloat16,  # 使用bfloat16提升性能
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_quant_storage=torch.bfloat16
+            )
+            logger.info("✅ 使用4-bit量化配置")
+        except ImportError:
+            logger.warning("⚠️ bitsandbytes未安装，使用标准精度加载模型")
+        except Exception as e:
+            logger.warning(f"⚠️ 4-bit量化配置失败，使用标准精度: {str(e)}")
         
         self.chat_tokenizer = AutoTokenizer.from_pretrained(
             Config.CHAT_MODEL,
@@ -174,28 +186,34 @@ class AIInferenceEngine:
             self.chat_tokenizer.pad_token = self.chat_tokenizer.eos_token
         
         # 尝试使用Flash Attention 2，如果不支持则回退到标准实现
+        model_kwargs = {
+            "device_map": "auto",
+            "trust_remote_code": True,
+            "torch_dtype": torch.bfloat16,
+            "cache_dir": "./data/models",
+            "low_cpu_mem_usage": True
+        }
+        
+        # 只有在量化配置可用时才添加
+        if quantization_config is not None:
+            model_kwargs["quantization_config"] = quantization_config
+        
         try:
+            model_kwargs["attn_implementation"] = "flash_attention_2"
             self.chat_model = AutoModelForCausalLM.from_pretrained(
                 Config.CHAT_MODEL,
-                quantization_config=quantization_config,
-                device_map="auto",
-                trust_remote_code=True,
-                torch_dtype=torch.bfloat16,
-                cache_dir="./data/models",
-                attn_implementation="flash_attention_2",  # 使用Flash Attention 2
-                low_cpu_mem_usage=True
+                **model_kwargs
             )
             logger.info("✅ 使用Flash Attention 2加载模型")
         except Exception as e:
             logger.warning(f"Flash Attention 2不支持，使用标准实现: {str(e)}")
+            # 移除Flash Attention 2配置
+            if "attn_implementation" in model_kwargs:
+                del model_kwargs["attn_implementation"]
+            
             self.chat_model = AutoModelForCausalLM.from_pretrained(
                 Config.CHAT_MODEL,
-                quantization_config=quantization_config,
-                device_map="auto",
-                trust_remote_code=True,
-                torch_dtype=torch.bfloat16,
-                cache_dir="./data/models",
-                low_cpu_mem_usage=True
+                **model_kwargs
             )
         
         # 设置生成配置

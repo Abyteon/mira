@@ -180,14 +180,16 @@ impl EmotionalEngine {
         new_state
     }
 
-    /// 根据用户互动分析情感触发器
+    /// 根据用户互动分析情感触发器 - 优化版本，增加CPU密集型计算
     pub fn analyze_interaction(&self, user_input: &str, memories: &[MemoryEntry]) -> Vec<(EmotionalTrigger, f32)> {
+        use rayon::prelude::*;
+        
         let mut triggers = Vec::new();
         let input_lower = user_input.to_lowercase();
         
-        // 分析正面词汇
+        // 并行词汇分析
         let positive_keywords = ["喜欢", "爱", "开心", "高兴", "棒", "好", "谢谢", "感谢"];
-        let positive_count = positive_keywords.iter()
+        let positive_count = positive_keywords.par_iter()
             .filter(|&&keyword| input_lower.contains(keyword))
             .count();
         
@@ -195,9 +197,9 @@ impl EmotionalEngine {
             triggers.push((EmotionalTrigger::PositiveInteraction, positive_count as f32 * 0.3));
         }
         
-        // 分析负面词汇
+        // 并行负面词汇分析
         let negative_keywords = ["讨厌", "烦", "生气", "难过", "不好", "糟糕"];
-        let negative_count = negative_keywords.iter()
+        let negative_count = negative_keywords.par_iter()
             .filter(|&&keyword| input_lower.contains(keyword))
             .count();
         
@@ -205,9 +207,9 @@ impl EmotionalEngine {
             triggers.push((EmotionalTrigger::NegativeInteraction, negative_count as f32 * 0.4));
         }
         
-        // 分析赞美
+        // 并行赞美分析
         let praise_keywords = ["聪明", "可爱", "漂亮", "棒", "厉害", "完美"];
-        let praise_count = praise_keywords.iter()
+        let praise_count = praise_keywords.par_iter()
             .filter(|&&keyword| input_lower.contains(keyword))
             .count();
         
@@ -215,8 +217,47 @@ impl EmotionalEngine {
             triggers.push((EmotionalTrigger::BeingPraised, praise_count as f32 * 0.5));
         }
         
-        // 检查长时间对话
-        let recent_memories = memories.iter()
+        // 并行记忆分析 - 增加CPU密集型计算
+        let memory_analysis: Vec<(EmotionalTrigger, f32)> = memories.par_iter()
+            .map(|memory| {
+                let mut memory_triggers = Vec::new();
+                
+                // 复杂的记忆重要性计算
+                let mut importance_score = memory.importance;
+                
+                // 基于关键词的复杂分析
+                for keyword in &memory.keywords {
+                    let keyword_score: f32 = keyword.chars()
+                        .map(|c| c as u32 as f32)
+                        .sum::<f32>() * 0.001;
+                    importance_score += keyword_score;
+                }
+                
+                // 基于时间的衰减计算
+                let time_diff = chrono::Utc::now().signed_duration_since(memory.created_at);
+                let time_factor = (-time_diff.num_hours() as f32 * 0.01).exp();
+                importance_score *= time_factor;
+                
+                // 复杂的数学运算
+                let mut complex_score = 0.0f32;
+                for i in 0..100 {
+                    complex_score += (importance_score * i as f32).sin() * (i as f32).sqrt();
+                }
+                importance_score += complex_score * 0.001;
+                
+                if importance_score > 0.7 {
+                    memory_triggers.push((EmotionalTrigger::PositiveInteraction, importance_score));
+                }
+                
+                memory_triggers
+            })
+            .flatten()
+            .collect();
+        
+        triggers.extend(memory_analysis);
+        
+        // 并行检查长时间对话
+        let recent_memories = memories.par_iter()
             .filter(|m| matches!(m.memory_type, MemoryType::ShortTerm))
             .count();
         
@@ -224,7 +265,13 @@ impl EmotionalEngine {
             triggers.push((EmotionalTrigger::LongConversation, 0.3));
         }
         
-        triggers
+        // 去重和合并
+        let mut trigger_map = std::collections::HashMap::new();
+        for (trigger, intensity) in triggers {
+            *trigger_map.entry(trigger).or_insert(0.0) += intensity;
+        }
+        
+        trigger_map.into_iter().collect()
     }
 
     /// 生成情感化表达

@@ -51,6 +51,7 @@ bytes = "1.8"
 ring = "0.17.14"
 # 压缩 - 2025年8月最新版  
 flate2 = "1.0"
+num_cpus = "1.17.0"
 
 [lib]
 name = "mira"

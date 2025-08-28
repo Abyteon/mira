@@ -1911,6 +1911,7 @@ dependencies = [
  "jemalloc-sys",
  "metrics",
  "metrics-exporter-prometheus",
+ "num_cpus",
  "pretty_assertions",
  "proptest",
  "pyo3",

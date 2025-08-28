@@ -130,9 +130,10 @@ export fn pool_init(pool_size: usize) ?*anyopaque {
 /// - 成功时返回分配的内存指针
 /// - 失败时返回null（内存不足或参数无效）
 export fn pool_alloc(pool_ptr: ?*anyopaque, size: usize) ?*anyopaque {
-    if (pool_ptr == null) return null;
+    if (pool_ptr == null or size == 0) return null;
     const pool: *memory.MemoryPool = @ptrCast(@alignCast(pool_ptr));
-    return pool.alloc(size) catch null;
+    const result = pool.alloc(size) catch return null;
+    return result;
 }
 
 /// 释放内存池中的内存块
@@ -145,7 +146,7 @@ export fn pool_alloc(pool_ptr: ?*anyopaque, size: usize) ?*anyopaque {
 export fn pool_free(pool_ptr: ?*anyopaque, ptr: ?*anyopaque) void {
     if (pool_ptr == null or ptr == null) return;
     const pool: *memory.MemoryPool = @ptrCast(@alignCast(pool_ptr));
-    pool.free(@ptrCast(ptr));
+    pool.free(ptr.?);
 }
 
 /// 销毁内存池并释放所有相关资源
@@ -263,7 +264,7 @@ export fn hash(text: [*c]const u8, len: usize) u64 {
 /// 返回：
 /// - 内存使用量（字节）
 export fn memory_usage() usize {
-    return monitor.SystemMonitor.get_memory_usage();
+    return monitor.SystemMonitor.get_process_memory_rss();
 }
 
 /// 获取当前CPU使用率

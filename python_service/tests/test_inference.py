@@ -23,6 +23,22 @@ def client():
 def mock_engine():
     """模拟推理引擎"""
     engine = Mock(spec=AIInferenceEngine)
+    # 模拟异步引擎方法
+    engine.generate_embedding = Mock(return_value=asyncio.Future())
+    engine.generate_embedding.return_value.set_result([0.1, 0.2, 0.3])
+    
+    engine.generate_response = Mock(return_value=asyncio.Future())
+    engine.generate_response.return_value.set_result("模拟回复")
+    
+    engine.analyze_emotion = Mock(return_value=asyncio.Future())
+    engine.analyze_emotion.return_value.set_result(EmotionalState(
+        happiness=0.8, affection=0.7, trust=0.9, dependency=0.5,
+        mood="开心", timestamp="2025-01-14T12:00:00"
+    ))
+    
+    engine.extract_keywords = Mock(return_value=asyncio.Future())
+    engine.extract_keywords.return_value.set_result(["关键词1", "关键词2"])
+    
     return engine
 
 
@@ -88,10 +104,7 @@ class TestInferenceEndpoint:
     
     def test_embedding_generation(self, client, mock_engine):
         """测试嵌入生成"""
-        # 模拟返回值
-        mock_engine.generate_embedding.return_value = [0.1, 0.2, 0.3]
-        
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "测试文本",
                 "task_type": "GenerateEmbedding"
@@ -107,9 +120,7 @@ class TestInferenceEndpoint:
     
     def test_response_generation(self, client, mock_engine, sample_emotional_state, sample_memory_entries):
         """测试回复生成"""
-        mock_engine.generate_response.return_value = "你好呀~"
-        
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "你好",
                 "context": [entry.model_dump() for entry in sample_memory_entries],
@@ -122,13 +133,11 @@ class TestInferenceEndpoint:
             
             data = response.json()
             assert data["success"] is True
-            assert data["result"] == "你好呀~"
+            assert data["result"] == "模拟回复"
     
     def test_emotion_analysis(self, client, mock_engine, sample_emotional_state):
         """测试情感分析"""
-        mock_engine.analyze_emotion.return_value = sample_emotional_state
-        
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "我今天很开心",
                 "task_type": "AnalyzeEmotion"
@@ -144,9 +153,7 @@ class TestInferenceEndpoint:
     
     def test_keyword_extraction(self, client, mock_engine):
         """测试关键词提取"""
-        mock_engine.extract_keywords.return_value = ["关键词1", "关键词2"]
-        
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "这是一段包含关键词的测试文本",
                 "task_type": "ExtractKeywords"
@@ -172,7 +179,7 @@ class TestInferenceEndpoint:
     
     def test_invalid_task_type(self, client, mock_engine):
         """测试无效的任务类型"""
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "测试",
                 "task_type": "InvalidTask"
@@ -183,7 +190,7 @@ class TestInferenceEndpoint:
     
     def test_missing_context_for_response(self, client, mock_engine):
         """测试生成回复时缺少上下文"""
-        with patch('main.get_inference_engine', return_value=mock_engine):
+        with patch('main.inference_engine', mock_engine):
             request_data = {
                 "text": "你好",
                 "task_type": "GenerateResponse"
